@@ -37,8 +37,8 @@ def envia_mensaje(contact, text):
   input_box_search.send_keys(contact + Keys.ENTER)
   time.sleep(4)
 
-  wait = WebDriverWait(driver, 10)
-  element = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="_2heX1"]')))
+  #wait = WebDriverWait(driver, 10)
+  #element = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="_2heX1"]')))
 
   no_encuentra2 = driver.find_elements_by_xpath("//*[contains(text(), 'No se encontró ningún chat, contacto ni mensaje')]")
   error = bool(no_encuentra2) 
