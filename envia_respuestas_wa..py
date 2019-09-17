@@ -14,21 +14,21 @@ import time
 import openpyxl as excel
 
 def menu_principal(opcion):
+  print("*"*20)
   print("1. Filtrar contactos para envio")
   print("2. Enviar mensajes via enlace")
-  print("3. Enviar mensaje a contactos")
-  print("4. Ver consultas")
+  print("3. Enviar mensaje a contactos\n")
   while True:
     try:
       opcion = int(input("Selecciona una opcion:"))
-      if opcion < 5 and opcion > 0:
+      if opcion < 4 and opcion > 0:
         return(opcion)
       else:
-        print("Opcion incorrecta 1-4")
+        print("Opcion incorrecta 1-3")
         menu_principal(opcion=0)
         pass
     except ValueError:
-        print("Opcion incorrecta 1-4")
+        print("Opcion incorrecta 1-3")
   
 def busca_elemetos():
 
@@ -47,22 +47,27 @@ def espera_barra_progreso():
     espera_barra_progreso()
   
 
-def filtra_contactos(contact, text):
-  JS_enlace = "window.location.href = 'https://web.whatsapp.com/send?phone=" + contact + "&text=" + text + "';"
+def filtra_envia_contactos(contact, text, opc):
+  numero = contact.replace("-", "")
+  numero_listo = numero.replace(" ","")
+  JS_enlace = "window.location.href = 'https://web.whatsapp.com/send?phone=" + contact + "';"
   driver.execute_script(JS_enlace)
-  bot_contacto = '_19vo_'
   espera_barra_progreso()
   while True:
     try:
-      print("intento ver si carga el boton")
-      boton_contacto = WebDriverWait(driver, 10).until(
-      lambda driver: driver.find_element_by_class_name(bot_contacto))
       #aca busco el imput para enviar
       inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
-      input_box = driver.find_element_by_xpath(inp_xpath)
+      input_box = WebDriverWait(driver, 10).until(
+      lambda driver: driver.find_element_by_xpath(inp_xpath)
       time.sleep(2)
-      #input_box.send_keys(Keys.ENTER)
-      ws['D' + str(i)] = "enviado"
+      if opc=2:
+        input_box.send_keys(Keys.ENTER)
+        ws['D' + str(i)] = "enviado"
+        print (contact + " si")
+      else:
+        ws['D' + str(i)] = "valido para enviar"
+        print (contact + " si")
+        pass
       time.sleep(2)
       file.save("contacts.xlsx")
       return
@@ -76,52 +81,46 @@ def filtra_contactos(contact, text):
         file.save("contacts.xlsx")
       return
 
-def envia_con_enlace(contact, text):
-  driver.execute_script("window.location.href = 'https://web.whatsapp.com/send?phone=5493513883708&text=Cjhghj';")
 def envia_respuesta(contact, text):
   inp_xpath_search = "//input[@title='Buscar o empezar un chat nuevo']"
-  input_box_search = WebDriverWait(driver, 50).until(
-      lambda driver: driver.find_element_by_xpath(inp_xpath_search))
+  input_box_search = WebDriverWait(driver,50).until(lambda driver: driver.find_element_by_xpath(inp_xpath_search))
   input_box_search.click()
   time.sleep(2)
-
-  input_box_search.send_keys(contact + Keys.ENTER)
-  time.sleep(4)
-
-  wait = WebDriverWait(driver, 10)
-  element = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@class="_2heX1"]')))
-
-  no_encuentra = bool(driver.find_elements_by_xpath("//*[contains(text(), 'No se encontró ningún chat, contacto ni mensaje')]"))
-  if no_encuentra == True:
-      print(contact + ", Oops! no esta ese contacto...")
-      ws['D' + str(i)] = "no enviado"
+  input_box_search.send_keys(contact)
+  time.sleep(2)
+while True:
+  try:
+      selected_contact = driver.find_element_by_xpath("//span[@title='"+contact+"']")
+      selected_contact.click()
+      inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
+      input_box = driver.find_element_by_xpath(inp_xpath)
       time.sleep(2)
+      # input_box.send_keys(text + Keys.ENTER)
+      input_box.send_keys(text)
       bot_clear = '//button[@class="_2heX1"]'
-      while True:
-        try:
-            boton_clear = driver.find_element_by_xpath(bot_clear)
-            time.sleep(2)
-            boton_clear.click()
-        except NoSuchElementException: 
-            pass
-        file.save("contacts.xlsx")
-        time.sleep(2)  
-  else:
-          selected_contact = driver.find_element_by_xpath("//span[@title='"+contact+"']")
-          selected_contact.send_keys(keys.ENTER)
-          inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
+      time.sleep(2)
+      boton_clear = driver.find_element_by_xpath(bot_clear)
+      time.sleep(2)
+      boton_clear.click()
+      ws['D' + str(i)] = "enviado"
+      file.save("contacts.xlsx")
+      time.sleep(2)
+      return
+   except NoSuchElementException:
+      print("Oops! no esta ese contacto...")
+      bot_clear = '//button[@class="_2heX1"]'
+      time.sleep(2)
+      boton_clear = driver.find_element_by_xpath(bot_clear)
+      time.sleep(2)
+      boton_clear.click()
+      ws['D' + str(i)] = "no enviado"
+      file.save("contacts.xlsx")
+      return
 
-          input_box = driver.find_element_by_xpath(inp_xpath)
-          time.sleep(2)
-          input_box.send_keys(text + Keys.ENTER)
-          ws['D' + str(i)] = "enviado"
-          time.sleep(2)
-          file.save("contacts.xlsx")
-          return
-  return
 
 driver = webdriver.Chrome('chromedriver.exe')
 driver.get('https://web.whatsapp.com/')
+
 while True:
   try:
     qr = driver.find_element_by_class_name("landing-main")
@@ -143,14 +142,13 @@ for row in ws.values:
     if "".__eq__(str(row[0])):
       pass
     else:
-      #print(row)
-      contacto ="549"+str(row[0])
+      contacto ="54 9 "+str(row[0])
       texto = row[1] +", " + row[2]
       print("\n" + contacto + "\n" + texto)
       if op == 1:
-        filtra_contactos(contacto, texto)
+        filtra_envia_contactos(contacto, texto, op)
       elif op == 2:
-        envia_con_enlace(contacto, texto)
+        filtra_envia_contactos(contacto, texto, op)
       elif op == 3:
         envia_respuesta(contacto, texto)
   
