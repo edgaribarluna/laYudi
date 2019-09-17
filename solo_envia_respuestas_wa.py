@@ -35,25 +35,9 @@ def envia_mensaje (contact, text):
   time.sleep(2)
   input_box_search.send_keys(contact)
   time.sleep(2)
+while True:
   try:
-      cont_a_sel = driver.find_element_by_class_name('//div[@class="X7YrQ" style="z-indez: 0"]')
-      
-      tit = cont_a_sel.text
-      pass
-  except NoSuchElementException:
-      print("Oops! no esta ese contacto...")
-      bot_clear = '//button[@class="_2heX1"]'
-      time.sleep(2)
-      boton_clear = driver.find_element_by_xpath(bot_clear)
-      time.sleep(2)
-      boton_clear.click()
-      ws['D' + str(i)] = "no enviado"
-      file.save("contacts.xlsx")
-      return
-
-  while True:
-    try:
-      selected_contact = driver.find_element_by_xpath("//span[@title='"+tit+"']")
+      selected_contact = driver.find_element_by_xpath("//span[@title='"+contact+"']")
       selected_contact.click()
       inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
       input_box = driver.find_element_by_xpath(inp_xpath)
@@ -69,10 +53,17 @@ def envia_mensaje (contact, text):
       file.save("contacts.xlsx")
       time.sleep(2)
       return
-    except:
+   except NoSuchElementException:
+      print("Oops! no esta ese contacto...")
+      bot_clear = '//button[@class="_2heX1"]'
+      time.sleep(2)
+      boton_clear = driver.find_element_by_xpath(bot_clear)
+      time.sleep(2)
+      boton_clear.click()
       ws['D' + str(i)] = "no enviado"
       file.save("contacts.xlsx")
-      pass
+      return
+      
 
 file = excel.load_workbook(filename = "contacts.xlsx")
 ws = file.active
