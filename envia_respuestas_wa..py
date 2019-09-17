@@ -1,5 +1,3 @@
-# envia_respuestas_wa.py
-
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
@@ -9,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
-
 import time
 import openpyxl as excel
 
@@ -48,8 +45,8 @@ def espera_barra_progreso():
   
 
 def filtra_envia_contactos(contact, text, opc):
-  numero = contact.replace("-", "")
-  numero_listo = numero.replace(" ","")
+  contact = contact.replace("-", "")
+  contact = contact.replace(" ","")
   JS_enlace = "window.location.href = 'https://web.whatsapp.com/send?phone=" + contact + "';"
   driver.execute_script(JS_enlace)
   espera_barra_progreso()
@@ -58,10 +55,10 @@ def filtra_envia_contactos(contact, text, opc):
       #aca busco el imput para enviar
       inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
       input_box = WebDriverWait(driver, 10).until(
-      lambda driver: driver.find_element_by_xpath(inp_xpath)
+      lambda driver: driver.find_element_by_xpath(inp_xpath))
       time.sleep(2)
-      if opc=2:
-        input_box.send_keys(Keys.ENTER)
+      if opc == 2:
+        input_box.send_keys(text + Keys.ENTER)
         ws['D' + str(i)] = "enviado"
         print (contact + " si")
       else:
@@ -88,8 +85,8 @@ def envia_respuesta(contact, text):
   time.sleep(2)
   input_box_search.send_keys(contact)
   time.sleep(2)
-while True:
-  try:
+  while True:
+    try:
       selected_contact = driver.find_element_by_xpath("//span[@title='"+contact+"']")
       selected_contact.click()
       inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
@@ -106,7 +103,7 @@ while True:
       file.save("contacts.xlsx")
       time.sleep(2)
       return
-   except NoSuchElementException:
+    except NoSuchElementException:
       print("Oops! no esta ese contacto...")
       bot_clear = '//button[@class="_2heX1"]'
       time.sleep(2)
@@ -142,7 +139,10 @@ for row in ws.values:
     if "".__eq__(str(row[0])):
       pass
     else:
-      contacto ="54 9 "+str(row[0])
+      con = str(row[0])
+      if con[0] == "0":
+        con = con.replace(con[0],"")
+      contacto ="54 9 " + con
       texto = row[1] +", " + row[2]
       print("\n" + contacto + "\n" + texto)
       if op == 1:
