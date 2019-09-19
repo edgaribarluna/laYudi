@@ -11,7 +11,7 @@ import time
 import openpyxl as excel
 
 def menu_principal(opcion):
-  print("*"*20)
+  print("_"*40)
   print("1. Filtrar contactos para envio")
   print("2. Enviar mensajes via enlace")
   print("3. Enviar mensaje a contactos\n")
@@ -37,8 +37,8 @@ def busca_elemetos():
 
 def espera_barra_progreso():
    try:
-    wait = WebDriverWait(driver, 20)
-    cargando = bool(wait.until(EC.invisibility_of_element_located((By.XPATH,'//*[@id="startup"]/div/progress'))))
+    wait = WebDriverWait(driver, 40)
+    wait.until(EC.invisibility_of_element_located((By.XPATH,'//*[@id="startup"]/div/progress')))
    except TimeoutException:
     print("esperamos.....")
     espera_barra_progreso()
@@ -49,6 +49,7 @@ def filtra_envia_contactos(contact, text, opc):
   contact = contact.replace(" ","")
   JS_enlace = "window.location.href = 'https://web.whatsapp.com/send?phone=" + contact + "';"
   driver.execute_script(JS_enlace)
+  time.sleep(4)
   espera_barra_progreso()
   while True:
     try:
@@ -84,29 +85,30 @@ def envia_respuesta(contact, text):
   input_box_search.click()
   time.sleep(2)
   input_box_search.send_keys(contact)
-  time.sleep(2)
+  time.sleep(5)
   while True:
     try:
-      selected_contact = driver.find_element_by_xpath("//span[@title='"+contact+"']")
+      selected_contact = driver.find_element_by_xpath("//span[@title='"+'+'+contact+"']")
       selected_contact.click()
       inp_xpath = '//div[@class="_3u328 copyable-text selectable-text"][@contenteditable="true"][@data-tab="1"]'
       input_box = driver.find_element_by_xpath(inp_xpath)
       time.sleep(2)
-      # input_box.send_keys(text + Keys.ENTER)
-      input_box.send_keys(text)
-      bot_clear = '//button[@class="_2heX1"]'
+      input_box.send_keys(text + Keys.ENTER)
       time.sleep(2)
-      boton_clear = driver.find_element_by_xpath(bot_clear)
-      time.sleep(2)
-      boton_clear.click()
+      #bot_clear = '//button[@class="_2heX1"]'
+      #time.sleep(5)
+      #boton_clear = driver.find_element_by_xpath(bot_clear)
+      #time.sleep(2)
+      #boton_clear.click()
       ws['D' + str(i)] = "enviado"
       file.save("contacts.xlsx")
       time.sleep(2)
       return
     except NoSuchElementException:
       print("Oops! no esta ese contacto...")
-      bot_clear = '//button[@class="_2heX1"]'
       time.sleep(2)
+      bot_clear = '//button[@class="_2heX1"]'
+      time.sleep(5)
       boton_clear = driver.find_element_by_xpath(bot_clear)
       time.sleep(2)
       boton_clear.click()
