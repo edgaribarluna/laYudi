@@ -9,16 +9,19 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import openpyxl as excel
+import os
 
 def menu_principal(opcion):
   print("_"*40)
   print("1. Filtrar contactos para envio")
   print("2. Enviar mensajes via enlace")
   print("3. Enviar mensaje a contactos\n")
+  print("4. Parsea texto")
+  
   while True:
     try:
       opcion = int(input("Selecciona una opcion:"))
-      if opcion < 4 and opcion > 0:
+      if opcion < 5 and opcion > 0:
         return(opcion)
       else:
         print("Opcion incorrecta 1-3")
@@ -28,12 +31,17 @@ def menu_principal(opcion):
         print("Opcion incorrecta 1-3")
   
 def busca_elemetos():
-
-  text = ''
+  
   textfinder1 = driver.find_elements_by_class_name('_2ko65') #globito
+
+  text = ""
+
   for i in textfinder1:
     text += i.text + '\n'
+
   print(text)
+  print(len(text))
+  print("_"*30)
 
 def espera_barra_progreso():
    try:
@@ -116,6 +124,19 @@ def envia_respuesta(contact, text):
       file.save("contacts.xlsx")
       return
 
+def guardar_numero(contacto):
+  archivo = open("contacto.txt", "a")
+  if contacto[0] == "0":
+    contacto = contacto[1:]
+
+  contacto = contacto.replace(" 15", "")
+  contacto = contacto.replace(" ","")
+
+
+  texto = contacto + "\n"
+  archivo.write(texto)
+  archivo.close()
+
 
 driver = webdriver.Chrome('chromedriver.exe')
 driver.get('https://web.whatsapp.com/')
@@ -134,24 +155,32 @@ if op == 4:
 
 
 i = 0
+os.system("taskkill /F /IM excel.exe")
 file = excel.load_workbook(filename = "contacts.xlsx")
 ws = file.active
+
 for row in ws.values:
     i = i + 1
-    if "".__eq__(str(row[0])):
-      pass
-    else:
+    #if "".__eq__(str(row[0])):
+    #   pass
+    #else:
+    if row[0] != None:
       con = str(row[0])
+      guardar_numero(con)
       if con[0] == "0":
         con = con.replace(con[0],"")
-      contacto ="54 9 " + con
-      texto = row[1] +", " + row[2]
+      contacto ="+54 9 " + con
+      texto = str(row[1]) + ", " + str(row[2])
       print("\n" + contacto + "\n" + texto)
+
+
       if op == 1:
         filtra_envia_contactos(contacto, texto, op)
       elif op == 2:
         filtra_envia_contactos(contacto, texto, op)
       elif op == 3:
         envia_respuesta(contacto, texto)
+      #elif op == 4:
+        #busca_elemetos()
   
     
